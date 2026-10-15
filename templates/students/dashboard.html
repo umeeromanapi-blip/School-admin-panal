@@ -1,0 +1,312 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <h1 style="font-size: 1.8rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">
+      School Executive Dashboard
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">
+      Overview of active student enrollments, institutional metrics, and quick administrative actions.
+    </p>
+  </div>
+  <button id="btn-api-sync-dashboard" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.86rem; padding: 10px 16px; border: 1px solid var(--border-subtle); cursor: pointer;">
+    <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+    </svg>
+    <span id="sync-text">Live API Sync</span>
+  </button>
+</div>
+
+<!-- Key Stat Metric Cards -->
+<div class="stat-grid">
+  <!-- Total Students (Core Requirement FR-01) -->
+  <div class="glass-card stat-card stat-card-primary" id="card-total-students">
+    <div class="stat-header">
+      <span class="stat-title">Total Enrolled Students</span>
+      <div class="stat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+    </div>
+    <div class="stat-value" id="total-student-count">{{ total_students }}</div>
+    <div class="stat-subtitle">
+      <span style="color: var(--success); font-weight: 600;">Active Records</span>
+      <span>• Synced with SQLite</span>
+    </div>
+  </div>
+
+  <!-- Total Classes -->
+  <div class="glass-card stat-card stat-card-cyan" id="card-total-classes">
+    <div class="stat-header">
+      <span class="stat-title">Academic Classes</span>
+      <div class="stat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+    </div>
+    <div class="stat-value">{{ total_classes }}</div>
+    <div class="stat-subtitle">
+      <span>Distinct grade levels</span>
+    </div>
+  </div>
+
+  <!-- Examinations -->
+  <div class="glass-card stat-card stat-card-primary" id="card-total-exams">
+    <div class="stat-header">
+      <span class="stat-title">Examinations</span>
+      <div class="stat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+    </div>
+    <div class="stat-value">{{ total_exams }}</div>
+    <div class="stat-subtitle">
+      <a href="{% url 'exams:exam_list' %}" style="color:var(--cyan); text-decoration:none;">{{ total_subjects }} subjects &bull; {{ total_marks }} grades &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Library Catalog -->
+  <div class="glass-card stat-card stat-card-cyan" id="card-total-library">
+    <div class="stat-header">
+      <span class="stat-title">Library Books</span>
+      <div class="stat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+    </div>
+    <div class="stat-value">{{ total_books }}</div>
+    <div class="stat-subtitle">
+      <a href="{% url 'library:book_list' %}" style="color:var(--cyan); text-decoration:none;">{{ total_active_loans }} on loan &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Transport Fleet -->
+  <div class="glass-card stat-card stat-card-primary" id="card-total-transport">
+    <div class="stat-header">
+      <span class="stat-title">Transport Fleet</span>
+      <div class="stat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="3" width="15" height="13"/>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      </div>
+    </div>
+    <div class="stat-value">{{ total_routes }}</div>
+    <div class="stat-subtitle">
+      <a href="{% url 'transport:transport_dashboard' %}" style="color:var(--cyan); text-decoration:none;">{{ total_vehicles }} buses &bull; Routes &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Hostel Dormitories -->
+  <div class="glass-card stat-card stat-card-cyan" id="card-total-hostel">
+    <div class="stat-header">
+      <span class="stat-title">Hostel Residency</span>
+      <div class="stat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+    </div>
+    <div class="stat-value">{{ active_residents }}</div>
+    <div class="stat-subtitle">
+      <a href="{% url 'hostel:hostel_overview' %}" style="color:var(--cyan); text-decoration:none;">{{ total_hostels }} halls &bull; Boarders &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Admin System Status -->
+  <div class="glass-card stat-card stat-card-emerald" id="card-system-status">
+    <div class="stat-header">
+      <span class="stat-title">System Status</span>
+      <div class="stat-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+    </div>
+    <div class="stat-value" style="font-size: 1.6rem; margin-top: 6px;">Operational</div>
+    <div class="stat-subtitle">
+      <span style="color: var(--success); font-weight: 600;">Epic 5 Active</span>
+      <span>• Django 6.1.2</span>
+    </div>
+  </div>
+</div>
+
+{% if active_notices %}
+<!-- Notice Board Announcements Alert Strip -->
+<div class="glass-card" style="padding:16px 20px; margin-bottom:24px; border-left:4px solid #6366f1; background:rgba(99,102,241,0.08);">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span style="font-weight:700; color:#fff; font-size:0.95rem;">Notice Board Alerts</span>
+    </div>
+    <a href="{% url 'announcements:announcement_list' %}" style="color:#a5b4fc; font-size:0.82rem; font-weight:600; text-decoration:none;">View All Notices &rarr;</a>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:8px;">
+    {% for n in active_notices %}
+      <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.88rem; flex-wrap:wrap; gap:6px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          {% if n.priority == 'urgent' %}
+            <span style="font-size:0.7rem; font-weight:800; background:rgba(239,68,68,0.25); color:#fca5a5; padding:2px 6px; border-radius:4px;">URGENT</span>
+          {% endif %}
+          <a href="{% url 'announcements:announcement_detail' n.pk %}" style="color:#e2e8f0; font-weight:600; text-decoration:none;" onmouseover="this.style.color='#38bdf8'" onmouseout="this.style.color='#e2e8f0'">
+            {{ n.title }}
+          </a>
+        </div>
+        <span style="font-size:0.78rem; color:var(--text-muted);">{{ n.published_date|date:"M d" }} &bull; {{ n.get_audience_display }}</span>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Dashboard Grid (Recent Admissions + Class Distribution & Quick Actions) -->
+<div class="dashboard-grid">
+  <!-- Recent Student Admissions Table -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h2>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Recent Registrations
+      </h2>
+      <a href="{% url 'students:student_list' %}" class="view-all">View All Records &rarr;</a>
+    </div>
+
+    {% if recent_students %}
+      <div class="table-responsive">
+        <table class="custom-table" id="dashboard-recent-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Admission ID</th>
+              <th>Class</th>
+              <th>Contact</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in recent_students %}
+              <tr>
+                <td>
+                  <div class="student-meta-cell">
+                    <div class="student-avatar">{{ s.student_name|slice:":2"|upper }}</div>
+                    <div>
+                      <div class="student-name-bold">{{ s.student_name }}</div>
+                      <div style="font-size: 0.76rem; color: var(--text-dim);">Added {{ s.created_at|date:"M d, Y" }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-adm">{{ s.admission_number }}</span>
+                </td>
+                <td>
+                  <span class="badge badge-class">{{ s.student_class }}</span>
+                </td>
+                <td class="font-mono" style="font-size: 0.86rem;">
+                  {{ s.contact_number }}
+                </td>
+                <td style="text-align: right;">
+                  <div class="action-group" style="justify-content: flex-end;">
+                    <a href="{% url 'students:student_edit' s.id %}" class="btn-icon btn-icon-edit" title="Edit Student">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </a>
+                    <a href="{% url 'students:student_delete' s.id %}" class="btn-icon btn-icon-delete" title="Delete Student">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h3>No Student Records Found</h3>
+        <p>Your database currently contains zero student records. Enroll your first student to see live statistics.</p>
+        <a href="{% url 'students:student_add' %}" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          Enroll First Student
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar Column: Class Distribution & Quick Shortcuts -->
+  <div style="display: flex; flex-direction: column; gap: 24px;">
+    <!-- Quick Actions Card -->
+    <div class="glass-card">
+      <div class="card-title-bar">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Quick Actions
+        </h2>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <a href="{% url 'students:student_add' %}" class="btn-primary" style="justify-content: center; width: 100%;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+          Add New Student Record
+        </a>
+        <a href="{% url 'students:student_list' %}" class="btn-secondary" style="justify-content: center; width: 100%;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search & Browse Directory
+        </a>
+      </div>
+    </div>
+
+    <!-- Class Breakdown -->
+    <div class="glass-card">
+      <div class="card-title-bar">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+            <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+          </svg>
+          Class Breakdown
+        </h2>
+      </div>
+
+      {% if class_stats %}
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          {% for item in class_stats %}
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.86rem; margin-bottom: 6px;">
+                <span style="font-weight: 600; color: #fff;">{{ item.student_class }}</span>
+                <span style="color: var(--text-muted); font-size: 0.8rem;">{{ item.count }} student{{ item.count|pluralize }}</span>
+              </div>
+              <div style="height: 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); overflow: hidden;">
+                <div style="height: 100%; border-radius: 4px; background: var(--primary-gradient); width: {% widthratio item.count total_students 100 %}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="font-size: 0.84rem; color: var(--text-dim); text-align: center; padding: 12px 0;">
+          No class records to display yet.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

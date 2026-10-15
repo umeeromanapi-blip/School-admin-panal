@@ -1,0 +1,89 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width:760px; margin:0 auto;">
+  <div style="margin-bottom:24px;">
+    <a href="{% url 'fees:fee_list' %}" style="display:inline-flex; align-items:center; gap:6px; font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Fee Records
+    </a>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff;">
+      {% if action_mode == 'update' %}Edit Fee Record{% else %}Add New Fee Record{% endif %}
+    </h1>
+    <p style="color:var(--text-muted); font-size:0.94rem; margin-top:4px;">
+      {% if action_mode == 'update' %}Update payment details for {{ record.student.student_name }}.{% else %}Create a new fee entry for a student.{% endif %}
+    </p>
+  </div>
+
+  <div class="glass-card" style="padding:32px;">
+    {% if form.non_field_errors %}
+      <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:24px; color:#fecaca; font-size:0.88rem;">
+        {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="POST" id="fee-form" novalidate>
+      {% csrf_token %}
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label" for="id_student">Student <span class="req">*</span></label>
+          {{ form.student }}
+          {% for e in form.student.errors %}<div class="field-error-text"><span>{{ e }}</span></div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_fee_type">Fee Type</label>
+          {{ form.fee_type }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_status">Payment Status</label>
+          {{ form.status }}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_amount_due">Amount Due (PKR) <span class="req">*</span></label>
+          {{ form.amount_due }}
+          {% for e in form.amount_due.errors %}<div class="field-error-text"><span>{{ e }}</span></div>{% endfor %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_amount_paid">Amount Paid (PKR)</label>
+          {{ form.amount_paid }}
+          {% for e in form.amount_paid.errors %}<div class="field-error-text"><span>{{ e }}</span></div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_month">Month</label>
+          {{ form.month }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_year">Year</label>
+          {{ form.year }}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_due_date">Due Date <span class="req">*</span></label>
+          {{ form.due_date }}
+          {% for e in form.due_date.errors %}<div class="field-error-text"><span>{{ e }}</span></div>{% endfor %}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_payment_date">Payment Date</label>
+          {{ form.payment_date }}
+        </div>
+
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label" for="id_remarks">Remarks / Notes</label>
+          {{ form.remarks }}
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{% url 'fees:fee_list' %}" class="btn-secondary" id="btn-cancel-fee">Cancel</a>
+        <button type="submit" class="btn-primary" id="btn-submit-fee">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          {% if action_mode == 'update' %}Update Record{% else %}Save Record{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

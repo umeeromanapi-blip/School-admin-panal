@@ -1,0 +1,89 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width:960px; margin:0 auto;">
+  <div style="margin-bottom:24px;">
+    <a href="{% url 'teachers:teacher_list' %}" style="display:inline-flex; align-items:center; gap:6px; font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Teacher Directory
+    </a>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">
+      {% if action_mode == 'update' %}Edit Teacher Profile{% else %}Add New Teacher{% endif %}
+    </h1>
+    <p style="color:var(--text-muted); font-size:0.94rem; margin-top:4px;">
+      {% if action_mode == 'update' %}Update staff details for <strong>{{ teacher.full_name }}</strong>.{% else %}Register a new staff member into the school system.{% endif %}
+    </p>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+    <div class="glass-card" style="padding:32px; grid-column:1/-1;">
+      {% if form.non_field_errors %}
+        <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:24px; color:#fecaca; font-size:0.88rem;">
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="POST" id="teacher-form" novalidate>
+        {% csrf_token %}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+          <div class="form-group">
+            <label class="form-label" for="id_employee_id">Employee ID <span class="req">*</span></label>
+            {{ form.employee_id }}
+            {% for e in form.employee_id.errors %}<div class="field-error-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg><span>{{ e }}</span></div>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_full_name">Full Name <span class="req">*</span></label>
+            {{ form.full_name }}
+            {% for e in form.full_name.errors %}<div class="field-error-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg><span>{{ e }}</span></div>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_phone">Contact Number <span class="req">*</span></label>
+            {{ form.phone }}
+            {% for e in form.phone.errors %}<div class="field-error-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg><span>{{ e }}</span></div>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_email">Email Address</label>
+            {{ form.email }}
+            {% for e in form.email.errors %}<div class="field-error-text"><span>{{ e }}</span></div>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_department">Department <span class="req">*</span></label>
+            {{ form.department }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_subject">Subject / Specialisation <span class="req">*</span></label>
+            {{ form.subject }}
+            {% for e in form.subject.errors %}<div class="field-error-text"><span>{{ e }}</span></div>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_assigned_class">Assigned Class(es)</label>
+            {{ form.assigned_class }}
+            <div class="form-text-muted">Comma-separated, e.g. Class 8-A, Class 9-B</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_qualification">Qualification</label>
+            {{ form.qualification }}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_date_joined">Joining Date <span class="req">*</span></label>
+            {{ form.date_joined }}
+            {% for e in form.date_joined.errors %}<div class="field-error-text"><span>{{ e }}</span></div>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="id_status">Employment Status</label>
+            {{ form.status }}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="{% url 'teachers:teacher_list' %}" class="btn-secondary" id="btn-cancel-teacher">Cancel</a>
+          <button type="submit" class="btn-primary" id="btn-submit-teacher">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            {% if action_mode == 'update' %}Update Teacher{% else %}Save Teacher{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

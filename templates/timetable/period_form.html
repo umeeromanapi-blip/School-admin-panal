@@ -1,0 +1,64 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width:580px; margin:0 auto;">
+  <div style="margin-bottom:24px;">
+    <a href="{% url 'timetable:period_list' %}" style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--text-muted); text-decoration:none; margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Periods
+    </a>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff;">{{ action }} Bell Period</h1>
+  </div>
+
+  <div class="glass-card" style="padding:32px;">
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px 16px; margin-bottom:20px; color:#fca5a5;">
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Period Number (Order) *</label>
+          {{ form.period_number }}
+          {% if form.period_number.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.period_number.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Period Title *</label>
+          {{ form.name }}
+          {% if form.name.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div>
+            <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Start Time *</label>
+            {{ form.start_time }}
+            {% if form.start_time.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.start_time.errors.0 }}</div>{% endif %}
+          </div>
+          <div>
+            <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">End Time *</label>
+            {{ form.end_time }}
+            {% if form.end_time.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.end_time.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px; padding:8px 0;">
+          {{ form.is_break }}
+          <label for="id_is_break" style="font-size:0.9rem; font-weight:600; color:#e2e8f0; cursor:pointer;">Mark as Break / Lunch Recess Slot</label>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:28px; border-top:1px solid var(--border-color); padding-top:20px;">
+        <a href="{% url 'timetable:period_list' %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary">
+          {% if action == 'Add' %}Create Period{% else %}Update Period{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

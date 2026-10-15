@@ -1,0 +1,62 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width:620px; margin:0 auto;">
+  <div style="margin-bottom:24px;">
+    <a href="{% url 'library:book_issue_list' %}" style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--text-muted); text-decoration:none; margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Loans
+    </a>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff;">Process Book Return</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Check in borrowed book, assess overdue fine if applicable, and restore shelf stock.</p>
+  </div>
+
+  <!-- Book & Borrower Summary Card -->
+  <div class="glass-card" style="padding:20px; margin-bottom:24px; border-left:4px solid var(--cyan);">
+    <div style="font-size:1.1rem; font-weight:800; color:#fff;">{{ issue.book.title }}</div>
+    <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">
+      Borrowed by: <strong style="color:#e2e8f0;">{{ issue.borrower_name }}</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:12px; font-size:0.85rem; color:#cbd5e1;">
+      <span>Issued: <strong>{{ issue.issue_date|date:"M d, Y" }}</strong></span>
+      <span>Due: <strong style="{% if issue.is_currently_overdue %}color:#f87171;{% endif %}">{{ issue.due_date|date:"M d, Y" }}</strong></span>
+    </div>
+    {% if issue.is_currently_overdue %}
+      <div style="margin-top:12px; padding:8px 12px; border-radius:6px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; font-size:0.85rem;">
+        Loan is overdue! Auto-calculated penalty at PKR 10/day: <strong>PKR {{ suggested_fine }}</strong>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="glass-card" style="padding:32px;">
+    <form method="POST">
+      {% csrf_token %}
+
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Return Date *</label>
+          {{ form.return_date }}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Fine Amount to Collect (PKR)</label>
+          {{ form.fine_amount }}
+          <div style="font-size:0.78rem; color:var(--text-muted); margin-top:4px;">Adjust if fee is waived or partially collected.</div>
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Return Notes / Physical Condition</label>
+          {{ form.remarks }}
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:28px; border-top:1px solid var(--border-color); padding-top:20px;">
+        <a href="{% url 'library:book_issue_list' %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary" style="background:linear-gradient(135deg, #10b981, #059669);">
+          Confirm Return &amp; Restock
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

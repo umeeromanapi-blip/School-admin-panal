@@ -1,0 +1,97 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Hostel &amp; Residential Life</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Manage campus dormitories, bed capacity, room allocations, and resident check-ins.</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'hostel:hostel_add' %}" class="btn-primary" id="add-hostel-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      Add Hostel Building
+    </a>
+    <a href="{% url 'hostel:room_list' %}" class="btn-secondary">
+      Rooms ({{ total_rooms }})
+    </a>
+    <a href="{% url 'hostel:allocation_list' %}" class="btn-secondary" style="border-color:rgba(124,58,237,0.4); color:#c4b5fd;">
+      Residents ({{ active_residents }})
+    </a>
+  </div>
+</div>
+
+<!-- Hostel KPIs -->
+<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-bottom:24px;">
+  <div class="glass-card stat-card stat-card-primary">
+    <div class="stat-header"><span class="stat-title">Hostel Buildings</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_buildings }}</div>
+    <div class="stat-subtitle">{{ total_rooms }} total dorm rooms</div>
+  </div>
+
+  <div class="glass-card stat-card stat-card-cyan">
+    <div class="stat-header"><span class="stat-title">Total Bed Capacity</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_capacity }}</div>
+    <div class="stat-subtitle"><span style="color:var(--success);">{{ vacant_beds }} beds vacant</span></div>
+  </div>
+
+  <div class="glass-card stat-card stat-card-emerald">
+    <div class="stat-header"><span class="stat-title">Active Residents</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ active_residents }}</div>
+    <div class="stat-subtitle">Current campus boarders</div>
+  </div>
+</div>
+
+<!-- Hostel Buildings Cards / Grid -->
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+  {% for h in hostels %}
+  <div class="glass-card" style="padding:24px; position:relative;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+      <div>
+        <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; padding:3px 8px; border-radius:6px; background:{% if h.hostel_type == 'Boys' %}rgba(59,130,246,0.2); color:#93c5fd; border:1px solid rgba(59,130,246,0.3);{% elif h.hostel_type == 'Girls' %}rgba(236,72,153,0.2); color:#fbcfe8; border:1px solid rgba(236,72,153,0.3);{% else %}rgba(16,185,129,0.2); color:#a7f3d0; border:1px solid rgba(16,185,129,0.3);{% endif %};">
+          {{ h.get_hostel_type_display }}
+        </span>
+        <h2 style="font-size:1.25rem; font-weight:800; color:#fff; margin-top:8px;">{{ h.name }}</h2>
+      </div>
+      <div style="display:inline-flex; gap:6px;">
+        <a href="{% url 'hostel:hostel_edit' h.pk %}" class="btn-secondary" style="padding:4px 8px; font-size:0.75rem;">Edit</a>
+        <a href="{% url 'hostel:hostel_delete' h.pk %}" class="btn-danger" style="padding:4px 6px; font-size:0.75rem;">&times;</a>
+      </div>
+    </div>
+
+    <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">
+      {{ h.address|default:"Campus Main Ground" }}
+    </div>
+
+    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 14px; margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:6px;">
+        <span style="color:var(--text-muted);">Warden / Caretaker:</span>
+        <strong style="color:#fff;">{{ h.warden_name }}</strong>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+        <span style="color:var(--text-muted);">Emergency Contact:</span>
+        <strong style="color:var(--cyan); font-family:monospace;">{{ h.warden_phone }}</strong>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
+      <div style="font-size:0.85rem; color:#cbd5e1;">
+        <strong style="color:#fff;">{{ h.room_count }}</strong> Rooms &bull; <strong style="color:var(--success);">{{ h.total_beds|default:0 }}</strong> Beds
+      </div>
+      <a href="{% url 'hostel:room_list' %}?hostel={{ h.id }}" class="btn-secondary" style="padding:5px 12px; font-size:0.82rem;">
+        View Rooms &rarr;
+      </a>
+    </div>
+  </div>
+  {% empty %}
+  <div class="glass-card" style="padding:48px 20px; text-align:center; color:var(--text-muted); grid-column:1 / -1;">
+    No hostel buildings configured. Add a boys or girls hostel residence.
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

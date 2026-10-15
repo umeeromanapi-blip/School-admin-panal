@@ -1,0 +1,77 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width:680px; margin:0 auto;">
+  <div style="margin-bottom:24px;">
+    <a href="{% url 'library:book_issue_list' %}" style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--text-muted); text-decoration:none; margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Book Loans
+    </a>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff;">Issue Library Book</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Record a new book checkout for an enrolled student or faculty instructor.</p>
+  </div>
+
+  <div class="glass-card" style="padding:32px;">
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px 16px; margin-bottom:20px; color:#fca5a5;">
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Select Book *</label>
+          {{ form.book }}
+          {% if form.book.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.book.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Borrower Type *</label>
+          {{ form.borrower_type }}
+          {% if form.borrower_type.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.borrower_type.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div id="student-select-wrap">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Select Student</label>
+          {{ form.student }}
+          {% if form.student.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.student.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div id="teacher-select-wrap" style="grid-column:1 / -1;">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Or Select Teacher</label>
+          {{ form.teacher }}
+          {% if form.teacher.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.teacher.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Issue Date *</label>
+          {{ form.issue_date }}
+          {% if form.issue_date.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.issue_date.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Due Date *</label>
+          {{ form.due_date }}
+          {% if form.due_date.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.due_date.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Remarks / Condition Notes</label>
+          {{ form.remarks }}
+          {% if form.remarks.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.remarks.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:28px; border-top:1px solid var(--border-color); padding-top:20px;">
+        <a href="{% url 'library:book_issue_list' %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary">
+          Issue Book
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

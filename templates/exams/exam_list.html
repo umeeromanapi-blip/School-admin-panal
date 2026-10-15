@@ -1,0 +1,131 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<!-- Header & Stats -->
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Examinations &amp; Terms</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Manage exam sessions, grading criteria, and academic assessments.</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'exams:exam_add' %}" class="btn-primary" id="add-exam-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      Create Exam
+    </a>
+    <a href="{% url 'exams:bulk_marks_entry' %}" class="btn-secondary" style="border-color:rgba(124,58,237,0.4); color:#c4b5fd;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Bulk Marks Entry
+    </a>
+  </div>
+</div>
+
+<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-bottom:24px;">
+  <div class="glass-card stat-card stat-card-primary">
+    <div class="stat-header"><span class="stat-title">Total Exams</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_exams }}</div>
+    <div class="stat-subtitle">Scheduled sessions</div>
+  </div>
+  <div class="glass-card stat-card stat-card-cyan">
+    <div class="stat-header"><span class="stat-title">Subjects</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_subjects }}</div>
+    <div class="stat-subtitle"><a href="{% url 'exams:subject_list' %}" style="color:var(--cyan); text-decoration:none;">View curriculum &rarr;</a></div>
+  </div>
+  <div class="glass-card stat-card stat-card-emerald">
+    <div class="stat-header"><span class="stat-title">Marks Recorded</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_marks_entered }}</div>
+    <div class="stat-subtitle"><a href="{% url 'exams:marks_list' %}" style="color:var(--success); text-decoration:none;">View gradebook &rarr;</a></div>
+  </div>
+</div>
+
+<!-- Filters -->
+<form method="GET" class="filter-bar" style="margin-bottom:20px;">
+  <div class="search-input-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="Search exam by title or year..." autocomplete="off">
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <select name="type" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Exam Types</option>
+      {% for val, label in exam_types %}
+        <option value="{{ val }}" {% if type_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if query or type_filter %}
+      <a href="{% url 'exams:exam_list' %}" class="btn-secondary" style="padding:9px 14px; font-size:0.84rem;">Clear</a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Exams Table -->
+<div class="glass-card" style="padding:0; overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="data-table" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border-color); background:rgba(255,255,255,0.02);">
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Exam Title</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Type</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Academic Year</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Duration</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Status</th>
+          <th style="padding:16px 20px; text-align:right; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exam in exams %}
+        <tr style="border-bottom:1px solid var(--border-color); transition:background 0.15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:16px 20px;">
+            <div style="font-weight:700; color:#fff; font-size:0.95rem;">{{ exam.name }}</div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-top:2px;">{{ exam.term }}</div>
+          </td>
+          <td style="padding:16px 20px;">
+            <span class="status-badge" style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3);">
+              {{ exam.get_exam_type_display }}
+            </span>
+          </td>
+          <td style="padding:16px 20px; color:var(--text-muted); font-size:0.9rem;">
+            {{ exam.academic_year }}
+          </td>
+          <td style="padding:16px 20px; font-size:0.88rem; color:#e2e8f0;">
+            {{ exam.start_date|date:"M d, Y" }} &ndash; {{ exam.end_date|date:"M d, Y" }}
+          </td>
+          <td style="padding:16px 20px;">
+            {% if exam.is_published %}
+              <span class="status-badge badge-active">Active</span>
+            {% else %}
+              <span class="status-badge" style="background:rgba(148,163,184,0.15); color:#cbd5e1; border:1px solid rgba(148,163,184,0.3);">Draft</span>
+            {% endif %}
+          </td>
+          <td style="padding:16px 20px; text-align:right;">
+            <div style="display:inline-flex; gap:8px; align-items:center;">
+              <a href="{% url 'exams:marks_list' %}?exam={{ exam.id }}" class="btn-secondary" style="padding:6px 12px; font-size:0.8rem;" title="View Exam Marks">
+                Marks
+              </a>
+              <a href="{% url 'exams:exam_edit' exam.pk %}" class="btn-secondary" style="padding:6px 12px; font-size:0.8rem;">
+                Edit
+              </a>
+              <a href="{% url 'exams:exam_delete' exam.pk %}" class="btn-danger" style="padding:6px 10px; font-size:0.8rem;">
+                Delete
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="padding:48px 20px; text-align:center; color:var(--text-muted);">
+            <div style="font-size:1.1rem; font-weight:600; color:#fff; margin-bottom:6px;">No exams found</div>
+            <p style="font-size:0.9rem; margin-bottom:16px;">Schedule your first examination to track academic assessments.</p>
+            <a href="{% url 'exams:exam_add' %}" class="btn-primary" style="display:inline-flex;">Create Exam</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

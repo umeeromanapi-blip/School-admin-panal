@@ -1,0 +1,123 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Class Timetable &amp; Schedule</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Weekly bell schedule, subject periods, classroom allocations, and faculty assignments.</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'timetable:entry_add' %}?class={{ selected_class }}" class="btn-primary" id="add-slot-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      Add Schedule Slot
+    </a>
+    <a href="{% url 'timetable:teacher_timetable' %}" class="btn-secondary" style="border-color:rgba(124,58,237,0.4); color:#c4b5fd;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Teacher Routines
+    </a>
+    <a href="{% url 'timetable:period_list' %}" class="btn-secondary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Bell Schedule
+    </a>
+  </div>
+</div>
+
+<!-- Class Selector Tabs / Dropdown -->
+<div class="glass-card" style="padding:16px 20px; margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <form method="GET" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <label style="font-size:0.9rem; font-weight:700; color:#fff;">Select Class:</label>
+    <select name="class" class="filter-select" onchange="this.form.submit()" style="font-weight:700; font-size:0.95rem; min-width:160px;">
+      {% for c in classes %}
+        <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+      {% empty %}
+        <option value="">No classes enrolled</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <div style="font-size:0.85rem; color:var(--text-muted);">
+    Total Scheduled Slots: <strong style="color:var(--cyan);">{{ total_slots }}</strong>
+  </div>
+</div>
+
+<!-- Timetable Matrix Grid -->
+{% if periods %}
+<div class="glass-card" style="padding:0; overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="data-table" style="width:100%; border-collapse:collapse; min-width:850px;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border-color); background:rgba(255,255,255,0.03);">
+          <th style="padding:16px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); width:150px;">Period / Time</th>
+          {% for day in days %}
+            <th style="padding:16px; text-align:center; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.04em; color:#fff;">
+              {{ day }}
+            </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in matrix_rows %}
+        <tr style="border-bottom:1px solid var(--border-color); {% if row.period.is_break %}background:rgba(255,255,255,0.015);{% endif %}">
+          <!-- Period Header Cell -->
+          <td style="padding:14px 16px; text-align:center; background:rgba(255,255,255,0.02); border-right:1px solid var(--border-color);">
+            <div style="font-weight:800; color:#fff; font-size:0.92rem;">Period {{ row.period.period_number }}</div>
+            <div style="font-size:0.75rem; color:var(--cyan); margin-top:2px;">
+              {{ row.period.start_time|time:"H:i" }} &ndash; {{ row.period.end_time|time:"H:i" }}
+            </div>
+            {% if row.period.is_break %}
+              <span style="display:inline-block; margin-top:4px; font-size:0.7rem; font-weight:700; background:rgba(245,158,11,0.2); color:#fcd34d; padding:2px 6px; border-radius:4px;">BREAK</span>
+            {% endif %}
+          </td>
+
+          <!-- Day Columns -->
+          {% for item in row.slots %}
+          <td style="padding:12px; vertical-align:top; border-right:1px solid rgba(255,255,255,0.04); height:90px; width:18%;">
+            {% if row.period.is_break %}
+              <div style="height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.82rem; font-style:italic;">
+                Break / Recess
+              </div>
+            {% elif item.slot %}
+              <div style="background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.3); border-radius:8px; padding:10px; transition:transform 0.15s ease;" onmouseover="this.style.background='rgba(99,102,241,0.18)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <strong style="color:#fff; font-size:0.88rem;">{{ item.slot.subject.name }}</strong>
+                  <div style="display:inline-flex; gap:4px;">
+                    <a href="{% url 'timetable:entry_edit' item.slot.id %}" style="color:var(--text-muted); text-decoration:none;" title="Edit slot">&bull;&bull;&bull;</a>
+                  </div>
+                </div>
+
+                <div style="font-size:0.78rem; color:#cbd5e1; margin-top:4px;">
+                  {% if item.slot.teacher %}
+                    {{ item.slot.teacher.full_name }}
+                  {% else %}
+                    <span style="color:var(--text-muted); font-style:italic;">TBD</span>
+                  {% endif %}
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:0.72rem; color:var(--text-muted);">
+                  <span style="font-family:monospace; background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">{{ item.slot.room_number }}</span>
+                  <a href="{% url 'timetable:entry_delete' item.slot.id %}" style="color:#f87171; text-decoration:none;" title="Remove">&times;</a>
+                </div>
+              </div>
+            {% else %}
+              <div style="height:100%; min-height:60px; display:flex; align-items:center; justify-content:center;">
+                <a href="{% url 'timetable:entry_add' %}?class={{ selected_class }}&day={{ item.day }}&period={{ row.period.id }}" style="font-size:0.75rem; color:var(--text-muted); text-decoration:none; padding:6px 12px; border:1px dashed rgba(255,255,255,0.15); border-radius:6px;" onmouseover="this.style.borderColor='rgba(99,102,241,0.5)'; this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.color='var(--text-muted)'">
+                  + Add
+                </a>
+              </div>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="glass-card" style="padding:48px 20px; text-align:center; color:var(--text-muted);">
+  <h3 style="font-size:1.15rem; font-weight:700; color:#fff; margin-bottom:6px;">No Periods Configured</h3>
+  <p style="font-size:0.9rem; margin-bottom:16px;">Configure your school's bell schedule periods to construct the weekly timetable.</p>
+  <a href="{% url 'timetable:period_add' %}" class="btn-primary" style="display:inline-flex;">Create First Period</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width: 1040px; margin: 0 auto;">
+  <!-- Header / Breadcrumb -->
+  <div style="margin-bottom: 24px;">
+    <a href="{% url 'students:student_list' %}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.86rem; color: var(--text-muted); margin-bottom: 12px; transition: color var(--transition-fast);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Back to Student Directory</span>
+    </a>
+    <h1 style="font-size: 1.8rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">
+      {% if action_mode == 'update' %}Edit Student Profile{% else %}Enroll New Student{% endif %}
+    </h1>
+    <p style="color: var(--text-muted); font-size: 0.94rem; margin-top: 4px;">
+      {% if action_mode == 'update' %}
+        Update existing academic and contact information for <strong>{{ student.student_name }}</strong>.
+      {% else %}
+        Complete the form below to register a new student record into the school database.
+      {% endif %}
+    </p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 28px; align-items: start;">
+    <!-- Form Card -->
+    <div class="glass-card" style="padding: 32px;">
+      {% if form.non_field_errors %}
+        <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 24px; color: #fecaca; font-size: 0.88rem;">
+          {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="POST" novalidate id="student-main-form" data-student-id="{% if action_mode == 'update' %}{{ student.id }}{% endif %}" data-action-mode="{{ action_mode|default:'create' }}">
+        {% csrf_token %}
+
+        <!-- Student Name -->
+        <div class="form-group" id="group-student_name">
+          <label for="id_student_name" class="form-label">
+            Student Full Name <span class="req">*</span>
+          </label>
+          {{ form.student_name }}
+          <div class="api-field-error" id="api-error-student_name" style="display:none; color: #f87171; font-size: 0.8rem; margin-top: 6px;"></div>
+          {% if form.student_name.errors %}
+            {% for error in form.student_name.errors %}
+              <div class="field-error-text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{{ error }}</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="form-text-muted">Enter the student's legal name (max 150 characters).</div>
+          {% endif %}
+        </div>
+
+        <!-- Admission Number -->
+        <div class="form-group" id="group-admission_number">
+          <label for="id_admission_number" class="form-label">
+            Admission Number / ID <span class="req">*</span>
+          </label>
+          {{ form.admission_number }}
+          <div class="api-field-error" id="api-error-admission_number" style="display:none; color: #f87171; font-size: 0.8rem; margin-top: 6px;"></div>
+          {% if form.admission_number.errors %}
+            {% for error in form.admission_number.errors %}
+              <div class="field-error-text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{{ error }}</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="form-text-muted">Unique identifier assigned by the school (e.g. ADM-001). Must be unique.</div>
+          {% endif %}
+        </div>
+
+        <!-- Student Class -->
+        <div class="form-group" id="group-student_class">
+          <label for="id_student_class" class="form-label">
+            Class / Grade <span class="req">*</span>
+          </label>
+          {{ form.student_class }}
+          <div class="api-field-error" id="api-error-student_class" style="display:none; color: #f87171; font-size: 0.8rem; margin-top: 6px;"></div>
+          {% if form.student_class.errors %}
+            {% for error in form.student_class.errors %}
+              <div class="field-error-text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{{ error }}</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="form-text-muted">Class or academic section (e.g. Class 8, Grade 10-A).</div>
+          {% endif %}
+        </div>
+
+        <!-- Contact Number -->
+        <div class="form-group" id="group-contact_number">
+          <label for="id_contact_number" class="form-label">
+            Parent / Contact Number <span class="req">*</span>
+          </label>
+          {{ form.contact_number }}
+          <div class="api-field-error" id="api-error-contact_number" style="display:none; color: #f87171; font-size: 0.8rem; margin-top: 6px;"></div>
+          {% if form.contact_number.errors %}
+            {% for error in form.contact_number.errors %}
+              <div class="field-error-text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{{ error }}</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="form-text-muted">Saved as text to preserve leading zeros (e.g. 03001234567).</div>
+          {% endif %}
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <a href="{% url 'students:student_list' %}" class="btn-secondary" id="btn-cancel-form">
+            Cancel
+          </a>
+          <button type="submit" class="btn-primary" id="btn-submit-student">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="btn-submit-label">{% if action_mode == 'update' %}Update Student Record{% else %}Save Student Record{% endif %}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Live Preview Card (UX Polish) -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <div class="glass-card" style="padding: 24px; position: sticky; top: 96px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+          <span style="font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--secondary); font-weight: 700;">
+            Live ID Badge Preview
+          </span>
+          <span class="badge badge-adm" id="preview-admission-number">
+            {{ form.instance.admission_number|default:"ADM-XXX" }}
+          </span>
+        </div>
+
+        <div style="text-align: center; padding: 12px 0 20px;">
+          <div id="preview-avatar" style="width: 64px; height: 64px; border-radius: var(--radius-md); background: var(--primary-gradient); color: #fff; font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 4px 16px var(--primary-glow);">
+            {{ form.instance.student_name|slice:":2"|upper|default:"ST" }}
+          </div>
+          <h3 id="preview-student-name" style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-bottom: 4px;">
+            {{ form.instance.student_name|default:"Student Name" }}
+          </h3>
+          <span class="badge badge-class" id="preview-student-class">
+            {{ form.instance.student_class|default:"Class --" }}
+          </span>
+        </div>
+
+        <div style="background: rgba(0, 0, 0, 0.3); border-radius: var(--radius-md); padding: 14px; border: 1px solid var(--border-subtle);">
+          <div class="preview-row">
+            <span class="preview-label">Guardian Contact</span>
+            <span class="preview-val font-mono" id="preview-contact-number">
+              {{ form.instance.contact_number|default:"0300-------" }}
+            </span>
+          </div>
+          <div class="preview-row">
+            <span class="preview-label">Record Status</span>
+            <span class="preview-val" style="color: var(--success);">
+              {% if action_mode == 'update' %}Active Profile{% else %}Draft Ready{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width:680px; margin:0 auto;">
+  <div style="margin-bottom:24px;">
+    <a href="{% url 'transport:vehicle_list' %}" style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--text-muted); text-decoration:none; margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Fleet
+    </a>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff;">{{ action }} Fleet Vehicle</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Enter vehicle registration, make/model, driver credentials, and passenger seating capacity.</p>
+  </div>
+
+  <div class="glass-card" style="padding:32px;">
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px 16px; margin-bottom:20px; color:#fca5a5;">
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Vehicle / Plate # *</label>
+          {{ form.vehicle_number }}
+          {% if form.vehicle_number.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.vehicle_number.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Model / Make *</label>
+          {{ form.vehicle_model }}
+          {% if form.vehicle_model.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.vehicle_model.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Driver Name *</label>
+          {{ form.driver_name }}
+          {% if form.driver_name.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.driver_name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Driver Contact Phone *</label>
+          {{ form.driver_phone }}
+          {% if form.driver_phone.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.driver_phone.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Driver License #</label>
+          {{ form.driver_license }}
+          {% if form.driver_license.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.driver_license.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Seating Capacity *</label>
+          {{ form.seating_capacity }}
+          {% if form.seating_capacity.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.seating_capacity.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Fleet Status *</label>
+          {{ form.status }}
+          {% if form.status.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.status.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:28px; border-top:1px solid var(--border-color); padding-top:20px;">
+        <a href="{% url 'transport:vehicle_list' %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary">
+          {% if action == 'Add' %}Register Vehicle{% else %}Save Changes{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

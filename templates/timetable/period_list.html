@@ -1,0 +1,77 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Bell Schedule &amp; Periods</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Define school time slots, instructional periods, and recess intervals.</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a href="{% url 'timetable:period_add' %}" class="btn-primary" id="add-period-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      Add Period
+    </a>
+    <a href="{% url 'timetable:class_timetable' %}" class="btn-secondary">
+      Back to Timetable
+    </a>
+  </div>
+</div>
+
+<div class="glass-card" style="padding:0; overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="data-table" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border-color); background:rgba(255,255,255,0.02);">
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted); width:80px;">Period #</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Period Name</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Start Time</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">End Time</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Type</th>
+          <th style="padding:16px 20px; text-align:right; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in periods %}
+        <tr style="border-bottom:1px solid var(--border-color); transition:background 0.15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:16px 20px; font-weight:800; color:var(--cyan); font-size:1.1rem;">
+            {{ p.period_number }}
+          </td>
+          <td style="padding:16px 20px; font-weight:700; color:#fff; font-size:0.95rem;">
+            {{ p.name }}
+          </td>
+          <td style="padding:16px 20px; color:#e2e8f0; font-family:monospace; font-size:0.9rem;">
+            {{ p.start_time|time:"H:i" }}
+          </td>
+          <td style="padding:16px 20px; color:#e2e8f0; font-family:monospace; font-size:0.9rem;">
+            {{ p.end_time|time:"H:i" }}
+          </td>
+          <td style="padding:16px 20px; text-align:center;">
+            {% if p.is_break %}
+              <span style="font-size:0.75rem; font-weight:700; background:rgba(245,158,11,0.2); color:#fcd34d; padding:3px 8px; border-radius:6px; border:1px solid rgba(245,158,11,0.3);">
+                BREAK / RECESS
+              </span>
+            {% else %}
+              <span class="status-badge badge-active" style="font-size:0.75rem;">
+                CLASS SESSION
+              </span>
+            {% endif %}
+          </td>
+          <td style="padding:16px 20px; text-align:right;">
+            <div style="display:inline-flex; gap:8px;">
+              <a href="{% url 'timetable:period_edit' p.pk %}" class="btn-secondary" style="padding:5px 10px; font-size:0.8rem;">Edit</a>
+              <a href="{% url 'timetable:period_delete' p.pk %}" class="btn-danger" style="padding:5px 8px; font-size:0.8rem;">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="padding:48px 20px; text-align:center; color:var(--text-muted);">
+            No periods defined. Add your first bell schedule period.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

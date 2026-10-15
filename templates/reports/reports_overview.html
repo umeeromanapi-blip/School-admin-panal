@@ -1,0 +1,165 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="margin-bottom:28px;">
+  <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Reports &amp; Analytics</h1>
+  <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Institution-wide academic, financial, and attendance performance overview.</p>
+</div>
+
+<!-- Top Metrics Row -->
+<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-bottom:28px;">
+  <div class="glass-card stat-card stat-card-primary">
+    <div class="stat-header">
+      <span class="stat-title">Total Students</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    </div>
+    <div class="stat-value">{{ total_students }}</div>
+    <div class="stat-subtitle">Enrolled students</div>
+  </div>
+  <div class="glass-card stat-card stat-card-cyan">
+    <div class="stat-header">
+      <span class="stat-title">Total Teachers</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+    </div>
+    <div class="stat-value">{{ total_teachers }}</div>
+    <div class="stat-subtitle"><span style="color:var(--success);">{{ active_teachers }} active</span></div>
+  </div>
+  <div class="glass-card stat-card stat-card-emerald">
+    <div class="stat-header">
+      <span class="stat-title">Fee Collection</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.6rem;">{{ collection_rate }}%</div>
+    <div class="stat-subtitle">PKR {{ total_paid|floatformat:0 }} of {{ total_due|floatformat:0 }}</div>
+  </div>
+  <div class="glass-card stat-card">
+    <div class="stat-header">
+      <span class="stat-title">Attendance Rate</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.6rem; color:{% if attendance_rate >= 75 %}#6ee7b7{% elif attendance_rate >= 50 %}#fcd34d{% else %}#fca5a5{% endif %};">{{ attendance_rate }}%</div>
+    <div class="stat-subtitle">{{ present_count }} present / {{ total_att_records }} total</div>
+  </div>
+</div>
+
+<!-- Main Grid -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+
+  <!-- Fee Breakdown -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg> Fee Summary</h2>
+      <a href="{% url 'fees:fee_list' %}" class="view-all">View All &rarr;</a>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px; font-size:0.88rem;">
+      <div class="preview-row"><span class="preview-label">Total Due (PKR)</span><span class="preview-val font-mono">{{ total_due|floatformat:0 }}</span></div>
+      <div class="preview-row"><span class="preview-label">Total Collected</span><span class="preview-val font-mono" style="color:var(--success);">{{ total_paid|floatformat:0 }}</span></div>
+      <div class="preview-row"><span class="preview-label">Outstanding</span><span class="preview-val font-mono" style="color:#f87171;">{{ total_unpaid|floatformat:0 }}</span></div>
+      <div style="height:6px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden; margin-top:4px;">
+        <div style="height:100%; width:{{ collection_rate }}%; border-radius:4px; background:linear-gradient(90deg,#10b981,#6ee7b7);"></div>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:0.76rem; color:var(--text-dim);">
+        <span>{{ paid_records }} Paid</span>
+        <span style="color:#fcd34d;">{{ partial_records }} Partial</span>
+        <span style="color:#f87171;">{{ unpaid_records }} Unpaid</span>
+      </div>
+      {% if fees_by_type %}
+        <div style="margin-top:8px; border-top:1px solid var(--border-subtle); padding-top:12px;">
+          <div style="font-size:0.76rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:10px;">By Fee Type</div>
+          {% for ft in fees_by_type %}
+            <div class="preview-row">
+              <span class="preview-label">{{ ft.fee_type }}</span>
+              <span class="preview-val font-mono">{{ ft.paid|floatformat:0 }} / {{ ft.total|floatformat:0 }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Attendance Summary -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg> Attendance Summary</h2>
+      <a href="{% url 'attendance:attendance_list' %}" class="view-all">View All &rarr;</a>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px; font-size:0.88rem;">
+      <div class="preview-row"><span class="preview-label">Today's Present</span><span class="preview-val" style="color:var(--success);">{{ todays_present }} / {{ todays_total }}</span></div>
+      <div class="preview-row"><span class="preview-label">Today's Absent</span><span class="preview-val" style="color:#f87171;">{{ todays_absent }}</span></div>
+      <div class="preview-row"><span class="preview-label">Overall Present</span><span class="preview-val">{{ present_count }}</span></div>
+      <div class="preview-row"><span class="preview-label">Overall Absent</span><span class="preview-val">{{ absent_count }}</span></div>
+      <div class="preview-row"><span class="preview-label">Late Arrivals</span><span class="preview-val" style="color:#fcd34d;">{{ late_count }}</span></div>
+      <div style="height:6px; border-radius:4px; background:rgba(255,255,255,0.08); overflow:hidden; margin-top:4px;">
+        <div style="height:100%; width:{{ attendance_rate }}%; border-radius:4px; background:{% if attendance_rate >= 75 %}linear-gradient(90deg,#10b981,#6ee7b7){% elif attendance_rate >= 50 %}linear-gradient(90deg,#f59e0b,#fcd34d){% else %}linear-gradient(90deg,#ef4444,#fca5a5){% endif %};"></div>
+      </div>
+      {% if attendance_by_class %}
+        <div style="margin-top:8px; border-top:1px solid var(--border-subtle); padding-top:12px;">
+          <div style="font-size:0.76rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin-bottom:10px;">By Class</div>
+          {% for row in attendance_by_class %}
+            <div style="margin-bottom:10px;">
+              <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:4px;">
+                <span style="color:#fff; font-weight:600;">{{ row.class }}</span>
+                <span style="color:var(--text-dim);">{{ row.pct }}%</span>
+              </div>
+              <div style="height:4px; border-radius:3px; background:rgba(255,255,255,0.08);">
+                <div style="height:100%; width:{{ row.pct }}%; border-radius:3px; background:var(--primary);"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Student and Teacher Breakdown -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+  <!-- Students by Class -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Students by Class</h2>
+      <a href="{% url 'students:student_list' %}" class="view-all">View All &rarr;</a>
+    </div>
+    {% if students_by_class %}
+      {% for row in students_by_class %}
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.84rem; margin-bottom:5px;">
+            <span style="color:#fff; font-weight:600;">{{ row.student_class }}</span>
+            <span style="color:var(--text-muted);">{{ row.count }} student{{ row.count|pluralize }}</span>
+          </div>
+          <div style="height:5px; border-radius:3px; background:rgba(255,255,255,0.08);">
+            <div style="height:100%; width:{% widthratio row.count total_students 100 %}%; border-radius:3px; background:var(--primary-gradient);"></div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--text-dim); font-size:0.84rem;">No student data available.</p>
+    {% endif %}
+  </div>
+
+  <!-- Teachers by Department -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Teachers by Department</h2>
+      <a href="{% url 'teachers:teacher_list' %}" class="view-all">View All &rarr;</a>
+    </div>
+    {% if teachers_by_dept %}
+      {% for row in teachers_by_dept %}
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.84rem; margin-bottom:5px;">
+            <span style="color:#fff; font-weight:600;">{{ row.department }}</span>
+            <span style="color:var(--text-muted);">{{ row.count }} teacher{{ row.count|pluralize }}</span>
+          </div>
+          <div style="height:5px; border-radius:3px; background:rgba(255,255,255,0.08);">
+            {% if total_teachers > 0 %}
+              <div style="height:100%; width:{% widthratio row.count total_teachers 100 %}%; border-radius:3px; background:linear-gradient(90deg,#f59e0b,#ec4899);"></div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--text-dim); font-size:0.84rem;">No teacher data available.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

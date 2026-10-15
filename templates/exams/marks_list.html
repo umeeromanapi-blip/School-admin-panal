@@ -1,0 +1,155 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Marks &amp; Academic Gradebook</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">View student scores, automated grade calculations, and academic results.</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'exams:mark_add' %}" class="btn-primary" id="add-mark-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      Add Single Mark
+    </a>
+    <a href="{% url 'exams:bulk_marks_entry' %}" class="btn-secondary" style="border-color:rgba(124,58,237,0.4); color:#c4b5fd;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Bulk Class Entry
+    </a>
+  </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-bottom:24px;">
+  <div class="glass-card stat-card stat-card-primary">
+    <div class="stat-header"><span class="stat-title">Marks Entries</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_marks_count }}</div>
+    <div class="stat-subtitle">Evaluation records</div>
+  </div>
+
+  <div class="glass-card stat-card stat-card-emerald">
+    <div class="stat-header"><span class="stat-title">Passing Rate</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem; color:var(--success);">{{ pass_rate }}%</div>
+    <div class="stat-subtitle">{{ pass_count }} student results &ge; 40%</div>
+  </div>
+</div>
+
+<!-- Filters -->
+<form method="GET" class="filter-bar" style="margin-bottom:20px;">
+  <div class="search-input-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="Search by student name or admission #..." autocomplete="off">
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <select name="exam" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Exams</option>
+      {% for ex in exams %}
+        <option value="{{ ex.id }}" {% if selected_exam == ex.id|stringformat:"s" %}selected{% endif %}>{{ ex.name }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="subject" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Subjects</option>
+      {% for sb in subjects %}
+        <option value="{{ sb.id }}" {% if selected_subject == sb.id|stringformat:"s" %}selected{% endif %}>{{ sb.name }} ({{ sb.code }})</option>
+      {% endfor %}
+    </select>
+
+    <select name="class" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Classes</option>
+      {% for c in classes %}
+        <option value="{{ c }}" {% if selected_class == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+
+    {% if query or selected_exam or selected_subject or selected_class %}
+      <a href="{% url 'exams:marks_list' %}" class="btn-secondary" style="padding:9px 14px; font-size:0.84rem;">Clear</a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Marks Table -->
+<div class="glass-card" style="padding:0; overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="data-table" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border-color); background:rgba(255,255,255,0.02);">
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Student</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Exam</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Subject</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Score</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Percentage</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Grade</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Status</th>
+          <th style="padding:16px 20px; text-align:right; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in marks %}
+        <tr style="border-bottom:1px solid var(--border-color); transition:background 0.15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:16px 20px;">
+            <div style="font-weight:700; color:#fff; font-size:0.95rem;">{{ m.student.student_name }}</div>
+            <div style="color:var(--text-muted); font-size:0.82rem; margin-top:2px;">{{ m.student.student_class }} &middot; <span style="font-family:monospace; color:var(--cyan);">{{ m.student.admission_number }}</span></div>
+          </td>
+          <td style="padding:16px 20px; color:#e2e8f0; font-size:0.9rem;">
+            {{ m.exam.name }}
+          </td>
+          <td style="padding:16px 20px;">
+            <span style="font-weight:600; color:#fff;">{{ m.subject.name }}</span>
+            <span style="font-size:0.78rem; font-family:monospace; color:var(--text-muted); margin-left:4px;">({{ m.subject.code }})</span>
+          </td>
+          <td style="padding:16px 20px; text-align:center; font-weight:700; font-size:0.95rem; color:#fff;">
+            {{ m.marks_obtained|floatformat:1 }} <span style="color:var(--text-muted); font-weight:400; font-size:0.85rem;">/ {{ m.total_marks|floatformat:0 }}</span>
+          </td>
+          <td style="padding:16px 20px; text-align:center;">
+            <div style="font-weight:600; font-size:0.9rem; color:#e2e8f0;">{{ m.percentage }}%</div>
+            <div style="width:70px; height:4px; background:rgba(255,255,255,0.1); border-radius:999px; margin:4px auto 0; overflow:hidden;">
+              <div style="width:{{ m.percentage }}%; height:100%; background:{% if m.is_passed %}var(--success){% else %}var(--danger){% endif %}; border-radius:999px;"></div>
+            </div>
+          </td>
+          <td style="padding:16px 20px; text-align:center;">
+            <span style="display:inline-block; font-weight:800; font-size:0.85rem; padding:3px 10px; border-radius:6px; background:{% if m.grade == 'A+' or m.grade == 'A' %}rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3);{% elif m.grade == 'B' or m.grade == 'C' %}rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.3);{% elif m.grade == 'D' or m.grade == 'E' %}rgba(245,158,11,0.15); color:#fcd34d; border:1px solid rgba(245,158,11,0.3);{% else %}rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.3);{% endif %}">
+              {{ m.grade }}
+            </span>
+          </td>
+          <td style="padding:16px 20px; text-align:center;">
+            {% if m.is_passed %}
+              <span class="status-badge badge-active" style="font-size:0.75rem;">PASS</span>
+            {% else %}
+              <span class="status-badge badge-unpaid" style="font-size:0.75rem;">FAIL</span>
+            {% endif %}
+          </td>
+          <td style="padding:16px 20px; text-align:right;">
+            <div style="display:inline-flex; gap:8px; align-items:center;">
+              <a href="{% url 'exams:student_report_card' m.student.id %}?exam={{ m.exam.id }}" class="btn-secondary" style="padding:6px 10px; font-size:0.8rem; border-color:rgba(14,165,233,0.4); color:#38bdf8;" title="View Report Card">
+                Report Card
+              </a>
+              <a href="{% url 'exams:mark_edit' m.pk %}" class="btn-secondary" style="padding:6px 10px; font-size:0.8rem;">
+                Edit
+              </a>
+              <a href="{% url 'exams:mark_delete' m.pk %}" class="btn-danger" style="padding:6px 8px; font-size:0.8rem;">
+                Delete
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="padding:48px 20px; text-align:center; color:var(--text-muted);">
+            <div style="font-size:1.1rem; font-weight:600; color:#fff; margin-bottom:6px;">No marks recorded</div>
+            <p style="font-size:0.9rem; margin-bottom:16px;">Record student grades using single or bulk class entry.</p>
+            <div style="display:flex; justify-content:center; gap:10px;">
+              <a href="{% url 'exams:bulk_marks_entry' %}" class="btn-primary">Bulk Class Entry</a>
+              <a href="{% url 'exams:mark_add' %}" class="btn-secondary">Add Single Mark</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

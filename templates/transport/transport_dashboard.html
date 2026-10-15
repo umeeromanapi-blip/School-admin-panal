@@ -1,0 +1,116 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Transport &amp; Bus Fleet Management</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Manage campus bus routes, driver assignments, vehicle fleet inventory, and student transit passes.</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'transport:route_add' %}" class="btn-primary" id="add-route-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      Create Route
+    </a>
+    <a href="{% url 'transport:vehicle_list' %}" class="btn-secondary">
+      Fleet Vehicles ({{ total_vehicles }})
+    </a>
+    <a href="{% url 'transport:allocation_list' %}" class="btn-secondary" style="border-color:rgba(124,58,237,0.4); color:#c4b5fd;">
+      Student Passes ({{ total_passengers }})
+    </a>
+  </div>
+</div>
+
+<!-- Transport Fleet KPIs -->
+<div class="stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-bottom:24px;">
+  <div class="glass-card stat-card stat-card-primary">
+    <div class="stat-header"><span class="stat-title">Active Routes</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_routes }}</div>
+    <div class="stat-subtitle">Operational transit corridors</div>
+  </div>
+
+  <div class="glass-card stat-card stat-card-cyan">
+    <div class="stat-header"><span class="stat-title">Fleet Vehicles</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_vehicles }}</div>
+    <div class="stat-subtitle"><span style="color:var(--success);">{{ active_vehicles }} active</span> in service</div>
+  </div>
+
+  <div class="glass-card stat-card stat-card-emerald">
+    <div class="stat-header"><span class="stat-title">Enrolled Students</span>
+      <div class="stat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+    </div>
+    <div class="stat-value" style="font-size:1.8rem;">{{ total_passengers }}</div>
+    <div class="stat-subtitle">Active bus passes</div>
+  </div>
+</div>
+
+<!-- Routes Table -->
+<div class="glass-card" style="padding:0; overflow:hidden;">
+  <div style="padding:16px 20px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+    <h2 style="font-size:1.1rem; font-weight:700; color:#fff; margin:0;">Transit Routes &amp; Bus Allocations</h2>
+    <a href="{% url 'transport:route_add' %}" class="btn-primary" style="padding:6px 14px; font-size:0.82rem;">+ New Route</a>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table class="data-table" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border-color); background:rgba(255,255,255,0.02);">
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Route Name</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Origin &rarr; Destination</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Assigned Bus</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Monthly Fare</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Passengers</th>
+          <th style="padding:16px 20px; text-align:right; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in routes %}
+        <tr style="border-bottom:1px solid var(--border-color); transition:background 0.15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:16px 20px;">
+            <div style="font-weight:700; color:#fff; font-size:0.95rem;">{{ r.route_name }}</div>
+            {% if r.description %}<div style="color:var(--text-muted); font-size:0.8rem; margin-top:2px;">{{ r.description|truncatewords:8 }}</div>{% endif %}
+          </td>
+          <td style="padding:16px 20px; color:#cbd5e1; font-size:0.88rem;">
+            <span>{{ r.start_location }}</span>
+            <span style="color:var(--cyan); margin:0 4px;">&rarr;</span>
+            <span>{{ r.end_location }}</span>
+          </td>
+          <td style="padding:16px 20px;">
+            {% if r.vehicle %}
+              <div style="font-weight:600; color:#fff; font-size:0.88rem;">{{ r.vehicle.vehicle_number }}</div>
+              <div style="font-size:0.78rem; color:var(--text-muted);">Driver: {{ r.vehicle.driver_name }} ({{ r.vehicle.driver_phone }})</div>
+            {% else %}
+              <span style="color:var(--text-muted); font-style:italic; font-size:0.85rem;">Unassigned</span>
+            {% endif %}
+          </td>
+          <td style="padding:16px 20px; text-align:center; font-weight:700; color:#38bdf8; font-size:0.95rem;">
+            PKR {{ r.monthly_fare|floatformat:0 }}
+          </td>
+          <td style="padding:16px 20px; text-align:center;">
+            <span style="display:inline-block; font-weight:800; font-size:0.85rem; padding:3px 10px; border-radius:6px; background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3);">
+              {{ r.passenger_count }} Student{{ r.passenger_count|pluralize }}
+            </span>
+          </td>
+          <td style="padding:16px 20px; text-align:right;">
+            <div style="display:inline-flex; gap:8px;">
+              <a href="{% url 'transport:allocation_list' %}?route={{ r.id }}" class="btn-secondary" style="padding:5px 10px; font-size:0.8rem;">Passes</a>
+              <a href="{% url 'transport:route_edit' r.pk %}" class="btn-secondary" style="padding:5px 10px; font-size:0.8rem;">Edit</a>
+              <a href="{% url 'transport:route_delete' r.pk %}" class="btn-danger" style="padding:5px 8px; font-size:0.8rem;">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="padding:48px 20px; text-align:center; color:var(--text-muted);">
+            No transit routes defined. Create routes to schedule student transportation.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

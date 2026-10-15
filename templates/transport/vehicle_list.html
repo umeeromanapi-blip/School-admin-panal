@@ -1,0 +1,97 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+  <div>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Fleet Vehicles &amp; Drivers</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Manage school bus fleet, capacity, maintenance status, and driver licenses.</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a href="{% url 'transport:vehicle_add' %}" class="btn-primary" id="add-vehicle-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      Register Vehicle
+    </a>
+    <a href="{% url 'transport:transport_dashboard' %}" class="btn-secondary">
+      Back to Transport
+    </a>
+  </div>
+</div>
+
+<!-- Search & Filters -->
+<form method="GET" class="filter-bar" style="margin-bottom:20px;">
+  <div class="search-input-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="Search by vehicle #, driver name, or model..." autocomplete="off">
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <select name="status" class="filter-select" onchange="this.form.submit()">
+      <option value="">All Statuses</option>
+      {% for val, label in statuses %}
+        <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if query or status_filter %}
+      <a href="{% url 'transport:vehicle_list' %}" class="btn-secondary" style="padding:9px 14px; font-size:0.84rem;">Clear</a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Vehicles Table -->
+<div class="glass-card" style="padding:0; overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="data-table" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border-color); background:rgba(255,255,255,0.02);">
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Vehicle / Plate #</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Model / Make</th>
+          <th style="padding:16px 20px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Driver Details</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Capacity</th>
+          <th style="padding:16px 20px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Status</th>
+          <th style="padding:16px 20px; text-align:right; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vehicles %}
+        <tr style="border-bottom:1px solid var(--border-color); transition:background 0.15s ease;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:16px 20px;">
+            <div style="font-weight:800; color:var(--cyan); font-size:0.95rem; font-family:monospace;">{{ v.vehicle_number }}</div>
+          </td>
+          <td style="padding:16px 20px; color:#fff; font-size:0.9rem; font-weight:600;">
+            {{ v.vehicle_model }}
+          </td>
+          <td style="padding:16px 20px;">
+            <div style="font-weight:700; color:#fff; font-size:0.92rem;">{{ v.driver_name }}</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">Phone: {{ v.driver_phone }}</div>
+            {% if v.driver_license %}<div style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">Lic: {{ v.driver_license }}</div>{% endif %}
+          </td>
+          <td style="padding:16px 20px; text-align:center; font-weight:700; color:#cbd5e1; font-size:0.95rem;">
+            {{ v.seating_capacity }} Seats
+          </td>
+          <td style="padding:16px 20px; text-align:center;">
+            {% if v.status == 'Active' %}
+              <span class="status-badge badge-active">Active</span>
+            {% elif v.status == 'Maintenance' %}
+              <span class="status-badge badge-partial">Maintenance</span>
+            {% else %}
+              <span class="status-badge badge-unpaid">Inactive</span>
+            {% endif %}
+          </td>
+          <td style="padding:16px 20px; text-align:right;">
+            <div style="display:inline-flex; gap:8px;">
+              <a href="{% url 'transport:vehicle_edit' v.pk %}" class="btn-secondary" style="padding:5px 10px; font-size:0.8rem;">Edit</a>
+              <a href="{% url 'transport:vehicle_delete' v.pk %}" class="btn-danger" style="padding:5px 8px; font-size:0.8rem;">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="padding:48px 20px; text-align:center; color:var(--text-muted);">
+            No vehicles registered. Add a school bus or transport van.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width:880px; margin:0 auto;">
+  <!-- Header Actions -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+    <div>
+      <a href="{% url 'exams:marks_list' %}" style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--text-muted); text-decoration:none; margin-bottom:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Gradebook
+      </a>
+      <h1 style="font-size:1.8rem; font-weight:800; color:#fff; letter-spacing:-0.02em;">Academic Transcript &amp; Report Card</h1>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button onclick="window.print()" class="btn-secondary" style="display:inline-flex; align-items:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print Report Card
+      </button>
+    </div>
+  </div>
+
+  <!-- Exam Selector Filter -->
+  {% if exams %}
+  <div class="glass-card" style="padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; gap:12px;">
+    <span style="font-size:0.88rem; font-weight:600; color:var(--text-muted);">Filter by Exam:</span>
+    <form method="GET" style="display:flex; gap:8px; align-items:center;">
+      <select name="exam" class="filter-select" onchange="this.form.submit()">
+        <option value="">All Examinations Combined</option>
+        {% for ex in exams %}
+          <option value="{{ ex.id }}" {% if selected_exam_id == ex.id|stringformat:"s" %}selected{% endif %}>{{ ex.name }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- Printable Report Card Container -->
+  <div class="glass-card" id="printable-card" style="padding:36px; border:1px solid rgba(255,255,255,0.12); position:relative; overflow:hidden;">
+    <div style="position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(90deg, #6366f1, #38bdf8, #10b981);"></div>
+
+    <!-- Institutional Header -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid var(--border-color); padding-bottom:24px; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+          <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #6366f1, #38bdf8); display:flex; align-items:center; justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div>
+            <h2 style="font-size:1.3rem; font-weight:800; color:#fff; margin:0;">EduAdmin Academy</h2>
+            <div style="font-size:0.8rem; color:var(--text-muted);">Institutional Student Academic Evaluation Record</div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <span style="display:inline-block; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; font-weight:700; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:4px 10px; border-radius:6px; border:1px solid rgba(99,102,241,0.3);">
+          Official Transcript
+        </span>
+      </div>
+    </div>
+
+    <!-- Student Metadata Details Grid -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; background:rgba(255,255,255,0.02); padding:18px; border-radius:12px; border:1px solid rgba(255,255,255,0.06); margin-bottom:28px;">
+      <div>
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Student Name</div>
+        <div style="font-size:1.05rem; font-weight:800; color:#fff; margin-top:2px;">{{ student.student_name }}</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Admission No.</div>
+        <div style="font-size:1.05rem; font-weight:800; color:var(--cyan); margin-top:2px; font-family:monospace;">{{ student.admission_number }}</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Class / Section</div>
+        <div style="font-size:1.05rem; font-weight:700; color:#fff; margin-top:2px;">{{ student.student_class }}</div>
+      </div>
+      <div>
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Contact Number</div>
+        <div style="font-size:0.95rem; font-weight:600; color:#cbd5e1; margin-top:2px;">{{ student.contact_number }}</div>
+      </div>
+    </div>
+
+    <!-- Aggregate Performance Metric Cards -->
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:28px;">
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:10px; padding:16px; text-align:center;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Total Score</div>
+        <div style="font-size:1.5rem; font-weight:800; color:#fff; margin-top:4px;">{{ total_obtained|floatformat:1 }} <span style="font-size:0.9rem; color:var(--text-muted); font-weight:400;">/ {{ total_max|floatformat:0 }}</span></div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:10px; padding:16px; text-align:center;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Percentage</div>
+        <div style="font-size:1.5rem; font-weight:800; color:#38bdf8; margin-top:4px;">{{ overall_percentage }}%</div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:10px; padding:16px; text-align:center;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Overall Grade</div>
+        <div style="font-size:1.5rem; font-weight:900; margin-top:4px; color:{% if overall_grade == 'A+' or overall_grade == 'A' %}#6ee7b7{% elif overall_grade == 'B' or overall_grade == 'C' %}#93c5fd{% elif overall_grade == 'D' or overall_grade == 'E' %}#fcd34d{% else %}#fca5a5{% endif %};">
+          {{ overall_grade }}
+        </div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:10px; padding:16px; text-align:center;">
+        <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Academic Standing</div>
+        <div style="margin-top:6px;">
+          {% if passed_all %}
+            <span class="status-badge badge-active" style="padding:4px 12px; font-size:0.85rem;">QUALIFIED</span>
+          {% else %}
+            <span class="status-badge badge-unpaid" style="padding:4px 12px; font-size:0.85rem;">NEEDS IMPROVEMENT</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Marks Breakdown Table -->
+    <div style="border:1px solid var(--border-color); border-radius:10px; overflow:hidden; margin-bottom:32px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:rgba(255,255,255,0.04); border-bottom:1px solid var(--border-color);">
+            <th style="padding:14px 16px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Subject</th>
+            <th style="padding:14px 16px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Exam Session</th>
+            <th style="padding:14px 16px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Max</th>
+            <th style="padding:14px 16px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Obtained</th>
+            <th style="padding:14px 16px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Percentage</th>
+            <th style="padding:14px 16px; text-align:center; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Grade</th>
+            <th style="padding:14px 16px; text-align:left; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in marks %}
+          <tr style="border-bottom:1px solid var(--border-color);">
+            <td style="padding:14px 16px;">
+              <span style="font-weight:700; color:#fff;">{{ m.subject.name }}</span>
+              <span style="font-size:0.8rem; font-family:monospace; color:var(--text-muted); margin-left:4px;">({{ m.subject.code }})</span>
+            </td>
+            <td style="padding:14px 16px; color:#cbd5e1; font-size:0.88rem;">
+              {{ m.exam.name }}
+            </td>
+            <td style="padding:14px 16px; text-align:center; color:var(--text-muted); font-size:0.9rem;">
+              {{ m.total_marks|floatformat:0 }}
+            </td>
+            <td style="padding:14px 16px; text-align:center; font-weight:700; color:#fff; font-size:0.95rem;">
+              {{ m.marks_obtained|floatformat:1 }}
+            </td>
+            <td style="padding:14px 16px; text-align:center;">
+              <div style="font-size:0.88rem; font-weight:600; color:#e2e8f0;">{{ m.percentage }}%</div>
+              <div style="width:50px; height:3px; background:rgba(255,255,255,0.1); border-radius:999px; margin:3px auto 0;">
+                <div style="width:{{ m.percentage }}%; height:100%; background:{% if m.is_passed %}var(--success){% else %}var(--danger){% endif %}; border-radius:999px;"></div>
+              </div>
+            </td>
+            <td style="padding:14px 16px; text-align:center;">
+              <span style="font-weight:800; font-size:0.85rem; padding:2px 8px; border-radius:4px; background:rgba(255,255,255,0.06); color:#fff;">
+                {{ m.grade }}
+              </span>
+            </td>
+            <td style="padding:14px 16px; font-size:0.85rem; color:var(--text-muted);">
+              {{ m.remarks|default:"Satisfactory" }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" style="padding:32px; text-align:center; color:var(--text-muted);">
+              No marks records registered for this student yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Official Signatures Block -->
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:40px; padding-top:20px; border-top:1px dashed var(--border-color);">
+      <div style="text-align:center; width:200px;">
+        <div style="height:36px; border-bottom:1px solid rgba(255,255,255,0.3); margin-bottom:8px;"></div>
+        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase;">Class Teacher Signature</div>
+      </div>
+      <div style="text-align:center; width:200px;">
+        <div style="height:36px; border-bottom:1px solid rgba(255,255,255,0.3); margin-bottom:8px;"></div>
+        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase;">Principal / Head of Exams</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'students/base.html' %}
+
+{% block content %}
+<div style="max-width:680px; margin:0 auto;">
+  <div style="margin-bottom:24px;">
+    <a href="{% url 'hostel:hostel_overview' %}" style="display:inline-flex; align-items:center; gap:6px; font-size:0.88rem; color:var(--text-muted); text-decoration:none; margin-bottom:12px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Hostel Overview
+    </a>
+    <h1 style="font-size:1.8rem; font-weight:800; color:#fff;">{{ action }} Hostel Residence</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin-top:4px;">Define hostel facility details, residency type, and warden contact credentials.</p>
+  </div>
+
+  <div class="glass-card" style="padding:32px;">
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:12px 16px; margin-bottom:20px; color:#fca5a5;">
+          {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+        </div>
+      {% endif %}
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Hostel / Hall Name *</label>
+          {{ form.name }}
+          {% if form.name.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Residency Type *</label>
+          {{ form.hostel_type }}
+          {% if form.hostel_type.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.hostel_type.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Warden / Caretaker Name *</label>
+          {{ form.warden_name }}
+          {% if form.warden_name.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.warden_name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Warden Contact Phone *</label>
+          {{ form.warden_phone }}
+          {% if form.warden_phone.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.warden_phone.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Campus Location / Address</label>
+          {{ form.address }}
+          {% if form.address.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.address.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div style="grid-column:1 / -1;">
+          <label style="display:block; font-size:0.88rem; font-weight:600; margin-bottom:6px; color:#cbd5e1;">Facilities &amp; Curfew Guidelines</label>
+          {{ form.description }}
+          {% if form.description.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:4px;">{{ form.description.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:28px; border-top:1px solid var(--border-color); padding-top:20px;">
+        <a href="{% url 'hostel:hostel_overview' %}" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary">
+          {% if action == 'Add' %}Create Hostel Building{% else %}Save Changes{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
