@@ -188,3 +188,4 @@ Open **[http://127.0.0.1:8000/](http://127.0.0.1:8000/)** in any modern web brow
 - [x] Student records persist in `db.sqlite3` across development server restarts.
 - [x] All navigation links, buttons, and sub-module routes return HTTP `200 OK`.
 - [x] All 116 automated unit and integration tests pass with 100% success rate.
+"# School-admin-panal" 
